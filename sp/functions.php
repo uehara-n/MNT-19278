@@ -74,17 +74,6 @@ function bc_post_page_style() {
 <?php
 	endif;
 }
-//スタッフの管理画面　順序順に並べる
-function set_post_types_admin_order( $wp_query ) {
-	if (is_admin()) {
-		$post_type = $wp_query->query['post_type'];
-			if ( $post_type == 'staff' ) {
-			$wp_query->set('orderby', 'menu_order');
-			$wp_query->set('order', 'ASC');
-		}
-	}
-}
-add_filter('pre_get_posts', 'set_post_types_admin_order');
 // カスタムフィールド&カスタム投稿タイプの追加
 function gr_register_terms( $terms, $taxonomy ) {
 	foreach ( $terms as $key => $label ) {
@@ -112,7 +101,7 @@ function bc_create_customs() {
         'public' => true,
         'has_archive' => true,
         'menu_position' => 4,
-        'supports' => array( 'title', 'editor','author' ),
+        'supports' => array( 'title', 'editor' ),
     ) );
 
     register_taxonomy( 'seko_cat', 'seko', array(
@@ -124,37 +113,26 @@ function bc_create_customs() {
 			'kitchen' => 'キッチン',
 			'ohuro' => 'お風呂',
 			'toilet' => 'トイレ',
+			'senmen' => '洗面',
 			'gaiheki' => '外壁',
+			'yane' => '屋根',
 			'exterior' => '外構・エクステリア・庭',
 			'living' => 'リビング・内装',
-			'ogata' => '大規模リフォーム',
+			'zenmen' => '全面改装',
+			'sizen' => '自然素材',
+			'design' => 'デザインリフォーム',
 			'other' => 'その他',
 	);
 	gr_register_terms( $terms, 'seko_cat' );
 
 	register_taxonomy( 'seko_staff', 'seko', array(
-		'label' => 'スタッフカテゴリー',
-    	'hierarchical' => true,
-	) );
+			'label' => 'スタッフカテゴリー',
+			'hierarchical' => true,
+		 	'update_count_callback' => '_update_post_term_count',
+		 	'singular_label' => 'スタッフカテゴリー',
+		 	'public' => true,
+		 	'show_ui' => true	) );
 
-	// こだわり施工事例
-	register_post_type( 'good_seko', array(
-			'labels' => array(
-		'name' => __( 'こだわり施工事例' ),
-			),
-			'public' => true,
-			'has_archive' => true,
-			'menu_position' => 5,
-	'supports' => array( 'title', 'editor' ),
-	) );
-	register_taxonomy( 'good_cat', 'good_seko', array(
-			 'label' => 'こだわり施工事例カテゴリー',
-	) );
-	$terms = array(
-		'good_kitchen' => 'キッチン',
-		'good_ohuro' => 'お風呂',
-	);
-	gr_register_terms( $terms, 'good_cat' );
 
 	// リフォームMenu
 	register_post_type( 'reformmenu', array(
@@ -184,105 +162,6 @@ function bc_create_customs() {
 	);
 	gr_register_terms( $terms, 'reformmenu_cat' );
 
-	// 価格表
-	register_post_type( 'price', array(
-			'labels' => array(
-		'name' => __( '価格表' ),
-			),
-			'public' => true,
-			'has_archive' => true,
-			'menu_position' => 7,
-	'supports' => array( 'title', 'editor','author' ),
-	) );
-	register_taxonomy( 'price_cat', 'price', array(
-			 'label' => '価格表カテゴリー',
-			 'hierarchical' => true,
-	) );
-	$terms = array(
-		'price_kitchen' => 'キッチン',
-		'price_ohuro' => 'お風呂',
-		'price_ohuro/price_unitex' => 'ユニットバスの入替え',
-		'price_ohuro/price_old2unit' => '在来工法のお風呂をユニットバスに',
-		'price_ohuro/price_oldreform' => '在来工法のお風呂リフォーム',
-		'price_toilet' => 'トイレ',
-		'price_j2w' => '和室から洋室',
-		'price_kabegami' => '壁紙クロス',
-		'price_gaiheki' => '外壁リフォーム',
-		'price_yane' => '屋根',
-		'price_yanereform' => '屋根リフォーム',
-		'price_yuka' => '床リフォーム',
-		'price_kyuto' => '給湯器',
-		'price_taishin' => '耐震リフォーム',
-	);
-	gr_register_terms( $terms, 'price_cat' );
-
-	// 価格表(一覧)
-	register_post_type( 'maker', array(
-			'labels' => array(
-		'name' => __( '価格表 一覧' ),
-			),
-			'public' => true,
-			'has_archive' => true,
-			'menu_position' => 8,
-		'supports' => array( 'title', 'editor' ),
-	) );
-	register_taxonomy( 'maker_cat', 'maker', array(
-			 'label' => '価格表 一覧カテゴリー',
-					 'hierarchical' => true,
-	) );
-	$terms = array(//ここにカテゴリー
-	);
-	gr_register_terms( $terms, 'maker_cat' );
-
-
-	// よくあるご相談
-	register_post_type( 'soudan', array(
-			'labels' => array(
-		'name' => __( 'よくあるご相談' ),
-			),
-			'public' => true,
-			'has_archive' => true,
-			'menu_position' => 9,
-		'supports' => array( 'title', 'editor' ),
-	) );
-	register_taxonomy( 'soudan_cat', 'soudan', array(
-			 'label' => 'よくあるご相談カテゴリー',
-			 'hierarchical' => true,
-	) );
-	$terms = array(
-		'soudan_kitchen' => 'キッチン',
-		'soudan_ohuro' => 'お風呂',
-		'soudan_toilet' => 'トイレ',
-		'soudan_j2w' => '和室から洋室',
-		'soudan_kabegami' => '壁紙クロス',
-		'soudan_yuka' => '床リフォーム',
-	);
-	gr_register_terms( $terms, 'soudan_cat' );
-
-
-	// 工事の流れ
-	register_post_type( 'nagare', array(
-			'labels' => array(
-		'name' => __( '工事の流れ' ),
-			),
-			'public' => true,
-			'has_archive' => true,
-			'menu_position' => 9,
-		'supports' => array( 'title', 'editor' ),
-	) );
-	register_taxonomy( 'nagare_cat', 'nagare', array(
-			 'label' => '工事の流れカテゴリー',
-			 'hierarchical' => true,
-	) );
-	$terms = array(
-		'nagare_kitchen' => 'キッチン',
-		'nagare_ohuro' => 'お風呂',
-		'nagare_toilet' => 'トイレ',
-		'nagare_j2w' => '和室から洋室',
-		'nagare_kabegami' => '壁紙クロス',
-		'nagare_yuka' => '床リフォーム',
-	);
-	gr_register_terms( $terms, 'nagare_cat' );
 
 
 	// 現場日記
@@ -320,7 +199,7 @@ function bc_create_customs() {
 	// イベント
 	register_post_type( 'event', array(
 			'labels' => array(
-		'name' => __( 'イベント' ),
+		'name' => __( 'イベント情報' ),
 			),
 			'public' => true,
 			'has_archive' => true,
@@ -340,23 +219,12 @@ function bc_create_customs() {
 			'public' => true,
 			'has_archive' => true,
 			'menu_position' => 13,
-	'supports' => array( 'title', 'editor','author','page-attributes' ),
+	'supports' => array( 'title', 'editor','author' ),
 	) );
 	register_taxonomy( 'staff_cat', 'staff', array(
-			 'label' => 'スタッフ部署カテゴリー',
-			 'hierarchical' => true,
+			 'label' => 'スタッフカテゴリー',
 	) );
 
-	// 職人
-	register_post_type( 'craftsman', array(
-			'labels' => array(
-		'name' => __( '職人' ),
-			),
-			'public' => true,
-			'has_archive' => true,
-			'menu_position' => 14,
-	'supports' => array( 'title', 'editor' ),
-	) );
 
 	// お客様の声
 	register_post_type( 'voice', array(
@@ -373,16 +241,6 @@ function bc_create_customs() {
          	'hierarchical' => true,
 	) );
 
-	// TOPスライドショー画像
-	register_post_type( 'slide_img', array(
-			'labels' => array(
-		'name' => __( 'TOPスライドショー画像' ),
-		'singular_name' => __( 'TOPスライドショー画像')
-			),
-			'public' => true,
-			'menu_position' => 16,
-	'supports' => array( 'title', 'editor' ),
-	) );
 
 	// TOPテロップ(一言メッセージ)
 	register_post_type( 'telop', array(
@@ -407,17 +265,45 @@ function bc_create_customs() {
 	'supports' => array( 'title', 'editor' ),
 	) );
 
-
-		// スタッフブログ
-	register_post_type( 'staffblog', array(
+	// よくあるご質問
+	register_post_type( 'faq', array(
 			'labels' => array(
-		'name' => __( 'スタッフブログ' ),
+		'name' => __( 'よくあるご質問' ),
 			),
 			'public' => true,
 			'has_archive' => true,
-			'menu_position' => 19,
+			'menu_position' => 13,
 	'supports' => array( 'title', 'editor' ),
 	) );
+    register_taxonomy( 'faq_cat', 'faq', array(
+         'label' => 'よくあるご質問カテゴリー',
+         'hierarchical' => true,
+    ) );
+
+		$terms = array(
+			'faq_reform' => 'リフォーム全般',
+			'faq_money' => 'お見積・費用・ローン',
+			'faq_kitchen' => 'キッチン',
+			'faq_bath' => 'お風呂',
+			'faq_toilet' => 'トイレ',
+			'faq_senmen' => '洗面',
+			'faq_gaiheki' => '外壁',
+			'faq_yane' => '屋根',
+			'faq_exterior' => '外構・エクステリア・庭',
+			'faq_genkan' => '玄関',
+			'faq_roka' => '廊下',
+			'faq_kaidan' => '階段',
+			'faq_living' => 'リビング・内装',
+			'faq_shizen' => '自然素材',
+			'faq_bfree' => 'バリヤフリー',
+			'faq_design' => 'デザインリフォーム',
+			'faq_kominka' => '古民家再生',
+			'faq_shincniku' => '新築／建替え（リフォーム）',
+			'faq_renovation' => 'リノベーション',
+			'faq_zochiku' => '増築',
+			'faq_taishin' => '耐震',
+			'faq_shiroari' => 'シロアリ',
+	);
 
 	//プラン
 	register_post_type('plan',array(
@@ -441,6 +327,7 @@ function bc_create_customs() {
 				'plan_senmen' => '洗面',
 			);
 			gr_register_terms( $terms, 'paln_cat' );
+
 }
 
 //// hooks
@@ -626,24 +513,123 @@ function gr_get_image_src( $key ) {
 	return $src;
 }
 
-function gr_contact_banner() {
+function go_top() {
 ?>
+	<!-- ======================トップページへ戻るここから======================= -->
+									<a href="#head" class="go_top"><img src="<?php bloginfo('template_url'); ?>/images/foot/go_top.png" width="12" height="12" alt="トップページへ戻る">ページトップへ戻る</a>
+	<!-- ======================トップページへ戻るここまで======================= -->
 
-<div class="content_kaiyu">
-<h3><img src="/wp-content/themes/reform/images/common/kaiyu_title.gif" width="342" height="26" alt="タツケンホームってどんな会社？" title="タツケンホームってどんな会社？" /></h3>
+<?php
+}
+
+
+function gaiyo_bnr(){
+echo <<<BNR
+<div class="gaiyo_bnr">
+<h2><img src="/wp-content/themes/reform/page_image/gaiyo/tit_kasuke.gif" width="144" height="16" /></h2>
 <ul>
-	<li><a href="/company/" title="会社案内"><img src="/wp-content/themes/reform/images/common/btn_k_company_rollout.jpg" width="230" height="190" alt="会社案内" /></a></li>
-	<li><a href="/staff/" title="スタッフ紹介"><img src="/wp-content/themes/reform/images/common/btn_k_staff_rollout.jpg" width="230" height="190" alt="スタッフ紹介" /></a></li>
-	<li><a href="/voice/" title="お客様の声"><img src="/wp-content/themes/reform/images/common/btn_k_voice_rollout.jpg" width="230" height="190" alt="お客様の声" /></a></li>
-	<li><a href="/company/#message" title="代表あいさつ"><img src="/wp-content/themes/reform/images/common/btn_k_aisatsu_rollout.jpg" width="230" height="190" alt="代表あいさつ" /></a></li>
-	<li><a href="/seko/" title="施工事例"><img src="/wp-content/themes/reform/images/common/btn_k_seko_rollout.jpg" width="230" height="190" alt="施工事例" /></a></li>
-	<li><a href="/genbanikki/" title="現場日記"><img src="/wp-content/themes/reform/images/common/btn_k_genba_rollout.jpg" width="230" height="190" alt="現場日記" /></a></li>
+<li><a href="/company/"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_gaiyo_rollout.gif" width="167" height="42" alt="会社概要" /></a></li>
+<li><a href="/message/"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_message_rollout.gif" width="167" height="42" alt="代表挨拶" /></a></li>
+<li><a href="/company/story/"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_story_rollout.gif" width="167" height="42" alt="創業物語" /></a></li>
+<li><a href="/staff/"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_staff_rollout.gif" width="167" height="42" alt="スタッフ紹介" /></a></li>
 </ul>
 </div>
+BNR;
 
+}
+
+function bottom_link() {
+?>
+	<!-- ======================下部リンク類ここから======================= -->
+<div id="bottom_link">
+	<a href="?pc-switcher=1" class="pc"><img src="<?php bloginfo('template_url'); ?>/images/blink/pc.png" width="21" height="21">PCサイト</a>
+	<div class="inner_l">
+		<a href="<?php bloginfo('url'); ?>/blog_staff" class="btn left">スタッフブログ</a><a href="<?php bloginfo('url'); ?>/staff" class="btn left">スタッフ紹介</a>
+	</div>
+	<div class="inner_r">
+		<a href="<?php bloginfo('url'); ?>/voice" class="btn">お客様の声</a><a href="<?php bloginfo('url'); ?>/event" class="btn">イベント情報</a>
+	</div>
+</div>
+	<!-- ======================下部リンク類ここまで======================= -->
+
+<?php
+}
+
+function sekobottom_link() {
+?>
+<!-- ======================施工リンク類ここから======================= -->
+<section id="seko_cate" class="clearfix">
+<h2><img src="<?php bloginfo('template_directory'); ?>/page_image/top/top_seko-cat_title.png" width="640px" height="70px" /></h2>
+<div class="link_btn"><a href="<?php bloginfo('url'); ?>/seko_cat/kitchen"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_01.png" width="133" border="0" alt="キッチン"></a><a href="<?php bloginfo('url'); ?>/seko_cat/ohuro"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_02.png" width="133" border="0" alt="お風呂"></a><a href="<?php bloginfo('url'); ?>/seko_cat/toilet"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_03.png" width="133" border="0" alt="トイレ"></a>
+<a href="<?php bloginfo('url'); ?>/seko_cat/gaiheki"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_04.png" width="310" border="0" alt="外壁・屋根"></a>
+<a href="<?php bloginfo('url'); ?>/seko_cat/exterior"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_05.png" width="310" border="0" alt="外構・エクステリア"></a>
+<a href="<?php bloginfo('url'); ?>/seko_cat/living"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_06.png" width="310" border="0" alt="リビング・内装"></a>
+<a href="<?php bloginfo('url'); ?>/seko_cat/alldenka"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_07.png" width="310" border="0" alt="オール電化"></a>
+<a href="<?php bloginfo('url'); ?>/seko_cat/ogata"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_08.png" width="310" border="0" alt="大規模リフォーム"></a></div>
+
+<br clear="all">
+<a href="<?php bloginfo('url'); ?>/seko" class="seko_btn"><img src="<?php bloginfo('template_url'); ?>/page_image/top/top_seko-cat_btn.png" width="584" border="0" alt="施工事例一覧を見る"></a>
+</section>
+<!-- ======================施工リンク類ここまで======================= -->
+
+<?php
+}
+
+function gr_contacts_banner() {
+?>
+<!-- ======================問合わせテーブルここから======================= -->
+<div class="bnr_space">
+<a href="/contact"><img src="<?php bloginfo('template_directory'); ?>/page_image/top/bnr/top_contact.png" width="578px" height="89px" /></a>
+<a href="tel:05075425617"><img src="<?php bloginfo('template_directory'); ?>/page_image/top/bnr/top_tel.png" width="578px" height="124px" /></a>
+</div>
+<!-- ======================問合わせテーブルここまで======================= -->
+
+<?php
+}
+
+function gr_about_banner() {
+?>
+<!-- ======================タツケンホームについてここから======================= -->
+<section id="about">
+<h2><img src="<?php bloginfo('template_directory'); ?>/page_image/top/top_about_title.jpg" width="640px" height="70px" /></h2>
+<div class="box">
+<a href="<?php bloginfo('url'); ?>/shiharai">
+<img src="<?php bloginfo('template_directory'); ?>/page_image/top/bnr/top_pay.jpg" width="582" height="275" />
+</a>
+<a href="<?php bloginfo('url'); ?>/merit">
+<img src="<?php bloginfo('template_directory'); ?>/page_image/top/bnr/top_meritdemerit.jpg" width="582" height="215" />
+</a>
+<div class="left">
+<a href="<?php bloginfo('url'); ?>/company">
+<img src="<?php bloginfo('template_directory'); ?>/page_image/top/top_company.jpg" width="283" height="69" />
+</a>
+<a href="<?php bloginfo('url'); ?>/media">
+<img src="<?php bloginfo('template_directory'); ?>/page_image/top/top_media.jpg" width="283" height="69" />
+</a>
+</div>
+<div class="right">
+<a href="<?php bloginfo('url'); ?>/staff">
+<img src="<?php bloginfo('template_directory'); ?>/page_image/top/top_staff.jpg" width="283" height="69" />
+</a>
+<a href="<?php bloginfo('url'); ?>/recruite">
+<img src="<?php bloginfo('template_directory'); ?>/page_image/top/top_saiyou.jpg" width="283" height="69" />
+</a>
+</div>
+</div><br clear="all">
+</section>
+<!-- ======================タツケンホームについてここまで======================= -->
+
+<?php
+}
+function gr_contact_banner() {
+?>
 	<!-- ======================問合わせテーブルここから======================= -->
-<div class="inquiry_table_top">
-<span class="btn"><a href="<?php echo site_url(); ?>/contact/"><img src="<?php echo site_url(); ?>/wp-content/themes/reform/images/common/top_table_mail_rollout.jpg" width="192" height="68" /></a></span></div>
+	<br clear="all">
+		<div class="contact_bnr">
+			<div class="btn">
+				<a href="<?php bloginfo('url'); ?>/contact"><img src="<?php bloginfo('template_url'); ?>/images/kaiyu/b_toi_btn.gif" alt="お問い合わせ　見積り依頼" width="212" height="79" class="over" /></a><a href="<?php bloginfo('url'); ?>/book"><img src="<?php bloginfo('template_url'); ?>/images/kaiyu/b_shiryo_btn.gif" alt="資料請求" width="212" height="79" class="over" /></a>
+			</div>
+		</div>
 	<!-- ======================問合わせテーブルここまで======================= -->
 
 <?php
@@ -663,6 +649,7 @@ if ( function_exists('register_sidebar') ) {
 add_action( 'wp_print_styles', 'gr_print_styles' );
 function gr_print_styles() {
 	if( ! is_admin() ) {
+		wp_enqueue_style( 'gr_allpage'  , get_stylesheet_directory_uri() . '/common/css/allpage.css' );
 		if ( is_front_page() ) {
 			wp_enqueue_style( 'gr_orbit'  , get_stylesheet_directory_uri() . '/common/css/orbit.css' );
 		}
@@ -1136,6 +1123,20 @@ function get_gaiyobar(){
 
 echo <<<BNR
 
+<div class="content_gaiyobt">
+<h3><img src="/wp-content/themes/reform/page_image/gaiyo/tit_gaiyobt.gif" width="202" height="17" alt="ありがとうの家　会社概要" title="ありがとうの家　会社概要" /></h3>
+<ul>
+	<li><a href="/company/" title="会社案内"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_gaiyo1_rollout.gif" width="222" height="52" alt="会社案内" /></a></li>
+	<li><a href="/company/history/" title="創業物語"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_gaiyo2_rollout.gif" width="222" height="52" alt="創業物語" /></a></li>
+	<li><a href="/company/promise/" title="代表あいさつ"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_gaiyo4_rollout.gif" width="222" height="52" alt="代表あいさつ" /></a></li>
+	<li><a href="/staff/" title="スタッフ紹介"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_gaiyo5_rollout.gif" width="222" height="52" alt="スタッフ紹介" /></a></li>
+	<li><a href="/soudan/" title="よくあるご質問"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_gaiyo6_rollout.gif" width="222" height="52" alt="よくあるご質問" /></a></li>
+	<li><a href="/voice/" title="お客様の声"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_gaiyo7_rollout.gif" width="222" height="52" alt="お客様の声" /></a></li>
+	<li><a href="/event/" title="イベント情報"><img src="/wp-content/themes/reform/page_image/gaiyo/bt_gaiyo3_rollout.gif" width="222" height="52" alt="イベント情報" /></a></li>
+<br clear="all"/>
+</ul>
+<br clear="all"/>
+</div>
 BNR;
 
 }
@@ -1183,10 +1184,65 @@ function get_the_post_image_id($post_id,$size){
 	        }
 	}
 }
-//clear feed cache
-/*
-function turn_off_feed_caching( $feed ) {
-	$feed->enable_cache( false );
+
+//スタッフブログ　写真
+function catch_that_image() {
+    global $post, $posts;
+    $first_img = '';
+    ob_start();
+    ob_end_clean();
+    $output = preg_match_all("/<img[^>]+src=[\"'](s?https?:\/\/[\-_\.!~\*'()a-z0-9;\/\?:@&=\+\$,%#]+\.(jpg|jpeg|png))[\"'][^>]+>/i", $post->post_content, $matches);
+    $first_img = $matches [1] [0];
+
+if(empty($first_img)){ //Defines a default image
+        $first_img = "/images/default.jpg";
+    }
+    return $first_img;
 }
-add_action( 'wp_feed_options', 'turn_off_feed_caching' );
-*/
+
+function page_navigation($pages = '', $range = 0) {
+	$showitems = ($range * 2)+1;
+
+	global $paged;
+	if(empty($paged)) $paged = 1;
+
+	if($pages == '')
+	{
+		global $wp_query;
+		$pages = $wp_query->max_num_pages;
+		if(!$pages) {
+			$pages = 1;
+		}
+	}
+
+	if(1 != $pages) {
+		echo "<div class=\"PageNavi\">";
+		if($paged > 2 && $paged > $range+1 && $showitems < $pages) echo "<a href='".get_pagenum_link(1)."'>1</a>";
+		if($paged > 1 && $showitems < $pages) echo "<a href=\"".get_pagenum_link($paged - 1)."\" class=\"around\">&laquo;前へ</a>";
+
+		for ($i=1; $i <= $pages; $i++) {
+			if (1 != $pages &&( !($i >= $paged+$range+1 || $i <= $paged-$range-1) || $pages <= $showitems )) {
+				echo ($paged == $i)? "<span class=\"current\">".$i."</span>":"<a href='".get_pagenum_link($i)."' class=\"inactive\">".$i."</a>";
+			}
+		}
+		if ($paged < $pages && $showitems < $pages) echo "<a href=\"".get_pagenum_link($paged + 1)."\" class=\"around\">次へ&raquo;</a>";
+		if ($paged < $pages-1 &&  $paged+$range-1 < $pages && $showitems < $pages) echo "<a href='".get_pagenum_link($pages)."'>".$pages."</a>";
+		echo "</div>\n";
+	}
+}
+
+//ページネーション
+add_filter( 'wp_pagenavi', 'bs_pagination', 10, 2 );
+function bs_pagination($html)   {
+$out = '';
+$out = str_replace("<div","",$html);
+$out = str_replace("class='wp-pagenavi'>","",$out);
+$out = str_replace("<a","<li><a",$out);
+$out = str_replace("</a>","</a></li>",$out);
+$out = str_replace("<span","<li><span",$out);
+$out = str_replace("</span>","</span></li>",$out);
+$out = str_replace("</div>","",$out);
+return '<nav class="pagination_wrap">
+<ul class="pagination">'.$out.'</ul>
+   </nav>';
+}
